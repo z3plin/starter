@@ -1,4 +1,5 @@
 const paths = require('./paths')
+const path = require('path')
 const { merge } = require('webpack-merge')
 const common = require('./webpack.common.js')
 
@@ -13,22 +14,19 @@ module.exports = merge(common, {
         publicPath: '/',
         filename: 'js/[name].[contenthash].bundle.js',
     },
-    plugins: [
-        new MiniCssExtractPlugin({
-            filename: 'styles/[name].css',
-            chunkFilename: '[id].css',
-        }),
-    ],
     module: {
         rules: [
             {
-                test: /\.{s[ac]ss|css}$/,
+                test: /\.(s[ac]ss|css)$/i,
+                include: [
+                    path.resolve(__dirname, '../src/styles/main.scss')
+                ],
                 use: [
                     {loader: MiniCssExtractPlugin.loader},
                     {
                         loader: 'css-loader',
                         options: {
-                            importLoaders: 2,
+                            importLoaders: 1,
                             sourceMap: false,
                         },
                     },
@@ -36,13 +34,22 @@ module.exports = merge(common, {
                         loader: 'postcss-loader', 
                         options: {
                             sourceMap: false,
+                            postcssOptions: {
+                                config: path.resolve(__dirname, './utils/postcss.config.js'),
+                            },
                         }
                     },
-                    'sass-loader',
+                    'sass-loader'
                 ],
-            },
+            }
         ],
     },
+    plugins: [
+        new MiniCssExtractPlugin({
+            filename: 'styles/[name].css',
+            chunkFilename: '[id].css',
+        }),
+    ],
     optimization: {
         minimize: true,
         minimizer: [new cssMinimizerPlugin(), '...'],
